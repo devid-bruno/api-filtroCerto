@@ -9,9 +9,15 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Jobs\TestJob;
 
 class UserController extends Controller
 {
+
+    public function testjob(){
+        TestJob::dispatch();
+        return response()->json(['message' => 'TestJob dispatched']);
+    }
 
     public function authenticate(Request $request)
     {

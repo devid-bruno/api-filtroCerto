@@ -223,7 +223,7 @@ class CarrierFilterController extends Controller
         $validator = Validator::make($request->all(), [
             'file' => 'required|file|mimes:csv,txt',
             'phone' => 'required|string',
-            'interval' => 'required|integer|min:1'
+            'interval' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
@@ -231,7 +231,7 @@ class CarrierFilterController extends Controller
         }
 
         $file = $request->file('file');
-        // $fileName = $request->file('file')->getClientOriginalName();
+        $fileName = $request->file('file')->getClientOriginalName();
         $phone = $request->input('phone');
         $interval = $request->input('interval');
         $uuid = Str::uuid()->toString();

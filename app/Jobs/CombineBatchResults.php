@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Upload;
-
+use Illuminate\Support\Facades\Log;
 
 class CombineBatchResults implements ShouldQueue
 {
@@ -42,26 +42,30 @@ class CombineBatchResults implements ShouldQueue
         $directory = 'responses/' . $this->userId;
         $allResults = [];
 
-        // Combinar os resultados de todos os batches
-        for ($i = 1; $i <= $this->batchCount; $i++) {
-            $filename = $directory . '/' . $this->uuid . '_batch_' . $i . '.txt';
-            if (Storage::exists($filename)) {
-                $batchResults = json_decode(Storage::get($filename), true);
-                $allResults = array_merge($allResults, $batchResults);
-                // Excluir arquivos individuais do batch
-                Storage::delete($filename);
+        try {
+            // Combinar os resultados de todos os batches
+            for ($i = 1; $i <= $this->batchCount; $i++) {
+                $filename = $directory . '/' . $this->uuid . '_batch_' . $i . '.txt';
+                if (Storage::exists($filename)) {
+                    $batchResults = json_decode(Storage::get($filename), true);
+                    $allResults = array_merge($allResults, $batchResults);
+                    // Excluir arquivos individuais do batch
+                    Storage::delete($filename);
+                }
             }
-        }
 
-        // Salvar o resultado combinado
-        $finalFilename = $directory . '/' . $this->uuid . '.txt';
-        Storage::put($finalFilename, json_encode($allResults, JSON_PRETTY_PRINT));
+            // Salvar o resultado combinado
+            $finalFilename = $directory . '/' . $this->uuid . '.txt';
+            Storage::put($finalFilename, json_encode($allResults, JSON_PRETTY_PRINT));
 
-        // Atualizar status do upload no banco de dados
-        $upload = Upload::where('uuid', $this->uuid)->first();
-        if ($upload) {
-            $upload->status = 'completed';
-            $upload->save();
+            // Atualizar status do upload no banco de dados
+            $upload = Upload::where('uuid', $this->uuid)->first();
+            if ($upload) {
+                $upload->status = 'completed';
+                $upload->save();
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao combinar resultados dos batches: ' . $e->getMessage());
         }
     }
 }

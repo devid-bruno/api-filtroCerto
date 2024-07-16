@@ -19,6 +19,8 @@ use App\Http\Middleware\JsonUnauthorized;
 */
 
 
+route::get('/job', [UserController::class, 'testjob']);
+
 Route::post('/auth', [UserController::class, 'authenticate']);
 
 
