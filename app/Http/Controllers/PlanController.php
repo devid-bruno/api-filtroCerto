@@ -12,15 +12,20 @@ class PlanController extends Controller
 
     public function QueryBalanceUser(string $id){
         $user = User::find($id);
-        $userPlan = UserPlan::where('user_id', $user->id)->firstOrFail();
 
         if (!$user) {
             return response()->json(['message' => 'Usuário não encontrado'], 404);
         }
 
+        $userPlan = UserPlan::where('user_id', $user->id)->first();
+
+        if (!$userPlan) {
+            return response()->json(['message' => 'Plano do usuário não encontrado'], 404);
+        }
+
         return response()->json([
             'Information' => [
-                'Balance' => $userPlan['whatsapp_queries_remaining'],
+                'Balance' => $userPlan->whatsapp_queries_remaining,
             ]
         ]);
     }

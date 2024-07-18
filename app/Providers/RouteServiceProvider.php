@@ -25,6 +25,7 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::middleware('json.unauthorized', \App\Http\Middleware\JsonUnauthorized::class);
+        Route::middleware('check.role', \App\Http\Middleware\CheckRole::class);
         
         $this->configureRateLimiting();
 

@@ -32,6 +32,9 @@ class UserController extends Controller
         }
 
         $user = Auth::guard('api')->user();
+        
+        $userPlan = UserPlan::where('user_id', $user->id)->first();
+        $saldo = $userPlan ? $userPlan->whatsapp_queries_remaining : 'Plano do usuário não encontrado';
 
         if ($user->payment_id === 2) {
             return response()->json([
@@ -46,6 +49,7 @@ class UserController extends Controller
         $response = response()->json([
             'status' => 'success',
             'user' => $user,
+            'saldo' => $saldo,
             'accessToken' => $token,
             'type' => 'bearer',
             'expiresIn' => $expiration,
@@ -57,16 +61,9 @@ class UserController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
-        if ($user->role_id === 1) {
-            $users = User::all();
-            return UserResource::collection($users);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Nível de acesso para acessar o recurso insuficiente.',
-            ], 403);
-        }
+
+        $users = User::all();
+        return UserResource::collection($users);
     }
 
 
