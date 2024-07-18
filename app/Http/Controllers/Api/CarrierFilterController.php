@@ -9,6 +9,8 @@ use App\Jobs\CombineBatchResultsWpp;
 use App\Jobs\ProcessBatchWpp;
 use App\Models\Upload;
 use App\Models\UploadType;
+use App\Models\UserPlan;
+use App\Models\Query;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -64,52 +66,64 @@ class CarrierFilterController extends Controller
 
 
     public function whatsappemLote(Request $request)
-{
-    try {
-        if (!$request->hasFile('file')) {
-            return response()->json(['error' => 'Arquivo não encontrado.'], 400);
-        }
-
-        $file = $request->file('file');
-        $telefones = [];
-
-        $contents = file($file);
-        foreach ($contents as $line) {
-            $telefone = trim($line);
-            if (!empty($telefone)) {
-                $telefones[] = $telefone;
+    {
+        try {
+            if (!$request->hasFile('file')) {
+                return response()->json(['error' => 'Arquivo não encontrado.'], 400);
             }
+
+            $file = $request->file('file');
+            $telefones = [];
+
+            $contents = file($file);
+            foreach ($contents as $line) {
+                $telefone = trim($line);
+                if (!empty($telefone)) {
+                    $telefones[] = $telefone;
+                }
+            }
+
+            if (empty($telefones)) {
+                return response()->json(['error' => 'Nenhum telefone encontrado no arquivo.'], 400);
+            }
+
+            $batches = array_chunk($telefones, 400);
+            $batchCount = count($batches);
+            $totalQueries = count($telefones);
+            $userId = Auth::id();
+
+            // Verificar o saldo do usuário
+            $userPlan = UserPlan::where('user_id', $userId)->firstOrFail();
+            if ($userPlan->whatsapp_queries_remaining < $totalQueries) {
+                return response()->json(['error' => 'Saldo insuficiente para realizar a consulta.'], 400);
+            }
+
+            // Deduzir o saldo
+            $userPlan->whatsapp_queries_remaining -= $totalQueries;
+            $userPlan->save();
+
+            $uuid = Str::uuid()->toString();
+
+            Upload::create([
+                'user_id' => $userId,
+                'uuid' => $uuid,
+                'status' => 'processing',
+                'upload_type_id' => UploadType::TIPO_WHATSAPP
+            ]);
+
+            foreach ($batches as $index => $batch) {
+                ProcessBatchWpp::dispatch($batch, $index + 1, $userId, $uuid, $batchCount);
+            }
+
+            CombineBatchResultsWpp::dispatch($batchCount, $userId, $uuid);
+
+            return response()->json(['message' => 'O processamento foi iniciado. Você será notificado quando estiver concluído.', 'uuid' => $uuid]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro no processamento do arquivo: ' . $e->getMessage());
+            return response()->json(['error' => 'Erro: ' . $e->getMessage()], 500);
         }
-
-        if (empty($telefones)) {
-            return response()->json(['error' => 'Nenhum telefone encontrado no arquivo.'], 400);
-        }
-
-        $batches = array_chunk($telefones, 400);
-        $batchCount = count($batches);
-        $userId = Auth::id();
-        $uuid = Str::uuid()->toString();
-
-        Upload::create([
-            'user_id' => $userId,
-            'uuid' => $uuid,
-            'status' => 'processing',
-            'upload_type_id' => UploadType::TIPO_WHATSAPP
-        ]);
-
-        foreach ($batches as $index => $batch) {
-            ProcessBatchWpp::dispatch($batch, $index + 1, $userId, $uuid, $batchCount);
-        }
-
-        CombineBatchResultsWpp::dispatch($batchCount, $userId, $uuid);
-
-        return response()->json(['message' => 'O processamento foi iniciado. Você será notificado quando estiver concluído.', 'uuid' => $uuid]);
-
-    } catch (\Exception $e) {
-        Log::error('Erro no processamento do arquivo: ' . $e->getMessage());
-        return response()->json(['error' => 'Erro: ' . $e->getMessage()], 500);
     }
-}
 
 
     public function userFiles()
@@ -143,8 +157,16 @@ class CarrierFilterController extends Controller
         }
     }
 
-    public function filterWpp(string $telefones){
+    public function filterWpp(string $telefones)
+    {
         try {
+            $user = Auth::user();
+            $userPlan = UserPlan::where('user_id', $user->id)->firstOrFail();
+
+            if ($userPlan->whatsapp_queries_remaining < 1) {
+                return response()->json(['error' => 'Saldo insuficiente para realizar a consulta.'], 400);
+            }
+
             $url = 'http://central-valida.portabilidadecelular.com/painel/consulta_whatsapp_json.php';
 
             $numerosArray = explode(',', $telefones);
@@ -159,27 +181,18 @@ class CarrierFilterController extends Controller
             $response = Http::get($url, $queryParams);
 
             if ($response->successful()) {
-                $responseData = [];
-                $data = $response->json();
+                $responseData = $response->json();
 
-                // foreach ($numerosArray as $numero) {
-                //     $result = $data[$numero] ?? null;
+                $userPlan->whatsapp_queries_remaining -= 1;
+                $userPlan->save();
 
-                //     if ($result) {
-                //         $responseData[] = [
-                //             'numero_consultado' => $result['numero_requisitado'],
-                //             'codigo_operadora' => $result['operadora'],
-                //             'portabilidade' => $result['portado'] == 1 ? true : false,
-                //             'data_portabilidade' => $result['data_portabilidade'],
-                //             'whatsapp' => $result['whatsapp']
-                //         ];
-                //     } else {
-                //         // Se não houver dados para o número, adicione um array vazio
-                //         $responseData[] = [];
-                //     }
-                // }
+                Query::create([
+                    'user_id' => $user->id,
+                    'type' => 'whatsapp',
+                    'query_count' => 1
+                ]);
 
-                return response()->json(['data' => $data]);
+                return response()->json(['data' => $responseData]);
             } else {
                 return response()->json(['error' => 'Erro ' . $response->status() . ': ' . $response->body()], $response->status());
             }

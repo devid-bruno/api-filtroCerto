@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Models\Plan;
+use App\Models\UserPlan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -13,12 +15,6 @@ use App\Jobs\TestJob;
 
 class UserController extends Controller
 {
-
-    public function testjob(){
-        TestJob::dispatch();
-        return response()->json(['message' => 'TestJob dispatched']);
-    }
-
     public function authenticate(Request $request)
     {
         $request->validate([
@@ -43,6 +39,7 @@ class UserController extends Controller
                 'message' => 'Pagamento pendente. Por favor, renove o plano.',
             ], 403);
         }
+
         $expiration = JWTAuth::factory()->getTTL() * 60; 
         $expirationDate = now()->addSeconds($expiration);
 
@@ -77,9 +74,17 @@ class UserController extends Controller
     {
         $data = $request->validated();
         $data['password'] = bcrypt($request->password);
-
         $user = User::create($data);
+
+        UserPlan::create([
+            'user_id' => $user->id,
+            'plan_id' => $data['plan_id'],
+            'whatsapp_queries_remaining' => 0,
+        ]);
+
+        
         $token = Auth::guard('api')->login($user);
+
         return response()->json([
             'status' => 'success',
             'message' => 'User created successfully',

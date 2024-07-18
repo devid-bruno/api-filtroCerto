@@ -23,8 +23,7 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'payment_id',
-        'role_id',
-        'plan_id'
+        'role_id'
     ];
 
     /**
@@ -72,10 +71,10 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    public function plan()
-{
-    return $this->belongsTo(Plan::class);
-}
+    public function userPlans()
+    {
+        return $this->hasMany(UserPlan::class);
+    }
 
 public function uploads()
     {

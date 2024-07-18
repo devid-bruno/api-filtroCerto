@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\Api\CarrierFilterController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\JsonUnauthorized;
@@ -53,6 +54,14 @@ Route::controller(UserController::class)->group(function () {
     
 })->middleware(JsonUnauthorized::class);
 
+
+Route::controller(PlanController::class)->group(function () {
+    Route::post('/usersToPlan', 'purchasePlan');
+
+    Route::post('/WhatsappQueries', 'addWhatsappQueries');
+
+    Route::get('/verifybalance/{id}', 'QueryBalanceUser');
+})->middleware(JsonUnauthorized::class);
 
 
 

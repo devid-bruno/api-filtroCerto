@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('whatsapp_quota');
-            $table->string('operator_quota');
+            $table->string('portability_limit')->default('unlimited');
+            $table->integer('whatsapp_limit')->default(0);
+            $table->decimal('price_per_100k', 8, 2)->default(100.00);
             $table->timestamps();
         });
     }

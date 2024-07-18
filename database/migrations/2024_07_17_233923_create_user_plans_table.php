@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('uploads', function (Blueprint $table) {
+        Schema::create('user_plans', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->uuid('uuid');
-            $table->string('status')->default('pending');
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('plan_id')->constrained('plans');
+            $table->integer('whatsapp_queries_remaining')->default(0);
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('uploads');
+        Schema::dropIfExists('user_plans');
     }
 };

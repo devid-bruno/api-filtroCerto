@@ -40,6 +40,9 @@ class StoreUpdateUserRequest extends FormRequest
             ],
             'role_id' => [
                 'required'
+            ],
+            'plan_id' => [
+                'required'
             ]
         ];
         if($this->method() === 'PATCH'){
@@ -58,6 +61,9 @@ class StoreUpdateUserRequest extends FormRequest
                 'nullable'
             ];
             $rules['role_id'] = [
+                'nullable'
+            ];
+            $rules['plan_id'] = [
                 'nullable'
             ];
         }

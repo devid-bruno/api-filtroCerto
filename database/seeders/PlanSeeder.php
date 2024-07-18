@@ -13,7 +13,11 @@ class PlanSeeder extends Seeder
      */
     public function run(): void
     {
-        Plan::create(['name' => 'Diamond', 'whatsapp_quota' => 100000, 'operator_quota' => 'unlimited']);
-        Plan::create(['name' => 'Bronze', 'whatsapp_quota' => 50000, 'operator_quota' => 'unlimited']);
+        Plan::create([
+            'name' => 'Portabilidade Ilimitada + WhatsApp Pré-paga',
+            'portability_limit' => 'unlimited',
+            'whatsapp_limit' => 0,
+            'price_per_100k' => 100.00,
+        ]);
     }
 }

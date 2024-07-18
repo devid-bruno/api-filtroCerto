@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('history_payments', function (Blueprint $table) {
+        Schema::create('uploads', function (Blueprint $table) {
             $table->id();
-            $table->string('history_payments');
+            $table->unsignedBigInteger('user_id');
+            $table->string('uuid');
+            $table->string('status')->default('pending');
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -23,6 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('history_payments');
+        Schema::dropIfExists('uploads');
     }
 };
+

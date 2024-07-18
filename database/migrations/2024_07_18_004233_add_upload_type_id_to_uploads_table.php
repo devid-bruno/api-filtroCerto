@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('uploads', function (Blueprint $table) {
             $table->unsignedBigInteger('upload_type_id')->after('status');
-
             $table->foreign('upload_type_id')->references('id')->on('upload_types');
         });
     }
