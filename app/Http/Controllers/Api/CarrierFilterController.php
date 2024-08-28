@@ -173,8 +173,8 @@ class CarrierFilterController extends Controller
             $numerosString = '[' . implode(',', $numerosArray) . ']';
 
             $queryParams = [
-                'user' => 'ixce',
-                'pass' => '383j39f93u-0l',
+                'user' => 'joaodedeus',
+                'pass' => 'Jovem153',
                 'numeros' => $numerosString
             ];
 
@@ -207,7 +207,7 @@ class CarrierFilterController extends Controller
     public function filterPortabilidade(string $telefone)
     {
         try {
-            $url = 'https://consultas.portabilidadecelular.com/painel/consulta_numero.php?user=ixce&pass=383j39f93u-0l&search_number=' . $telefone . '&completo';
+            $url = 'https://consultas.portabilidadecelular.com/painel/consulta_numero.php?user=joaodedeus&pass=Jovem153&search_number=' . $telefone . '&completo';
 
             $response = Http::get($url);
             if ($response->successful()) {

@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUpdateUserRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
-use App\Models\Plan;
-use App\Models\UserPlan;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Jobs\TestJob;
+use App\Models\Plan;
+use App\Models\User;
+use App\Models\UserPlan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserController extends Controller
 {
@@ -146,10 +147,14 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        $user = User::findOrFail($id);
-        $user->delete();
-        return response()->json([], 204);
+    DB::table('queries')->where('user_id', $id)->delete();
+    DB::table('user_plans')->where('user_id', $id)->delete();
+    $user = User::findOrFail($id);
+    $user->delete();
+
+    return response()->json([], 204);
     }
+
 
     public function renewal()
     {

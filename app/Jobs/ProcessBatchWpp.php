@@ -49,8 +49,8 @@ class ProcessBatchWpp implements ShouldQueue
         $numerosString = '[' . implode(',', $this->batch) . ']';
 
         $queryParams = [
-            'user' => 'ixce',
-            'pass' => '383j39f93u-0l',
+            'user' => env('API_USER'),
+            'pass' => env('API_PASSWORD'),
             'numeros' => $numerosString
         ];
 

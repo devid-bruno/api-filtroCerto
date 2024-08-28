@@ -43,8 +43,8 @@ Route::controller(UserController::class)->group(function () {
 
     Route::put('/users/{id}', 'update')->middleware(CheckRole::class);
 
-    Route::post('/logout', 'logout')->middleware(CheckRole::class);
-    Route::post('/refresh', 'refresh')->middleware(CheckRole::class);
+    Route::post('/logout', 'logout');
+    Route::post('/refresh', 'refresh');
     Route::post('/users', 'store')->middleware(CheckRole::class);
 
     Route::delete('/users/delete/{id}', 'destroy')->middleware(CheckRole::class);
@@ -57,7 +57,8 @@ Route::controller(PlanController::class)->group(function () {
 
     Route::post('/WhatsappQueries', 'addWhatsappQueries')->middleware(CheckRole::class);
 
-    Route::get('/verifybalance/{id}', 'QueryBalanceUser')->middleware(CheckRole::class);
+    Route::get('/verifybalance/{id}', 'QueryBalanceUser');
+    Route::get('/plans', 'Plans');
 })->middleware(JsonUnauthorized::class);
 
 

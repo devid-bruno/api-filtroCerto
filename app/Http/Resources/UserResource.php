@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'payment' => $this->payment_id,
             'role_id' => $this->role_id,
             'plan_id' => $this->plan_id,
+            'saldo' => $this->userPlan ? $this->userPlan->whatsapp_queries_remaining : 'Plano do usuário não encontrado',
             'created' =>Carbon::make($this->created_at),
         ];
     }

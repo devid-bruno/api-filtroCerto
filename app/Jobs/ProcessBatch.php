@@ -40,11 +40,11 @@ class ProcessBatch implements ShouldQueue
         $numeros = json_encode($this->batch);
         $url = 'https://consultas.portabilidadecelular.com/painel/consulta_numero_json.php';
         $queryParams = [
-            'user' => 'ixce',
-            'pass' => '383j39f93u-0l',
+            'user' => env('API_USER'),
+            'pass' => env('API_PASSWORD'),
             'numeros' => $numeros
         ];
-
+        
         $response = Http::get($url, $queryParams);
 
         if ($response->successful()) {

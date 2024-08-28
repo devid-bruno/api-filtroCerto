@@ -81,4 +81,9 @@ public function uploads()
         return $this->hasMany(Upload::class);
     }
 
+    public function userPlan()
+    {
+        return $this->hasOne(UserPlan::class, 'user_id');
+    }
+
 }

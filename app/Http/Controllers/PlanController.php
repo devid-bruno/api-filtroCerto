@@ -10,15 +10,17 @@ use Illuminate\Http\Request;
 class PlanController extends Controller
 {
 
+    public function Plans(){
+        return Plan::all();
+    }
+
     public function QueryBalanceUser(string $id){
         $user = User::find($id);
-
         if (!$user) {
             return response()->json(['message' => 'Usuário não encontrado'], 404);
         }
-
+        
         $userPlan = UserPlan::where('user_id', $user->id)->first();
-
         if (!$userPlan) {
             return response()->json(['message' => 'Plano do usuário não encontrado'], 404);
         }
